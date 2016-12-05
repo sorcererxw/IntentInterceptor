@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.sorcererxw.intentinterceptor">
 
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -16,6 +18,20 @@
             </intent-filter>
         </activity>
 
+        <receiver
+            android:name=".receivers.BootReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
+
+        <service android:name=".services.XposedPartnerService"
+            android:enabled="true">
+
+        </service>
+
         <meta-data
             android:name="xposedmodule"
             android:value="true"/>
@@ -26,8 +42,6 @@
             android:name="xposedminversion"
             android:value="30"/>
 
-        <activity android:name=".TestActivity">
-        </activity>
     </application>
 
 </manifest>
