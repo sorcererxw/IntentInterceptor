@@ -27,6 +27,8 @@ public class DataBean {
      * requestCode : -1
      */
 
+    @SerializedName("time")
+    private String time;
     @SerializedName("action")
     private String action;
     @SerializedName("clipData")
@@ -164,6 +166,14 @@ public class DataBean {
                 "\n, intentExtras=" + intentExtras +
                 "\n, bundle=" + bundle +
                 "\n}";
+    }
+
+    public String getTime() {
+        return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
     }
 
     public static class IntentExtrasBean {

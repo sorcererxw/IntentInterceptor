@@ -27,11 +27,6 @@
             </intent-filter>
         </receiver>
 
-        <service android:name=".services.XposedPartnerService"
-            android:enabled="true">
-
-        </service>
-
         <meta-data
             android:name="xposedmodule"
             android:value="true"/>

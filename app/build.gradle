@@ -43,4 +43,6 @@ dependencies {
     compile 'io.reactivex:rxjava:1.2.2'
     compile 'io.reactivex:rxandroid:1.2.1'
     compile 'com.artemzin.rxjava:proguard-rules:1.2.2.0'
+
+    compile 'org.sufficientlysecure:html-textview:3.0'
 }

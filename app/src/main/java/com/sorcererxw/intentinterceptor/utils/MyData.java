@@ -10,8 +10,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 import java.util.Set;
+import java.util.TimeZone;
 
 /**
  * @description:
@@ -40,18 +43,24 @@ public class MyData {
         }
     }
 
-    public static void write(String s) throws IOException {
-        FileUtils.write(new File(DATA_PATH), s + "\n", (String) null, true);
+    public static void clear() throws IOException {
+        FileUtils.write(new File(DATA_PATH), "", "GBK", false);
     }
 
-    public static String read() throws IOException {
-        String res = FileUtils.readFileToString(new File(DATA_PATH), (String) null);
-        return res + "]";
+    public static void write(String s) throws IOException {
+        FileUtils.write(new File(DATA_PATH), s + "\n", "GBK", true);
     }
 
     public static String parser(Intent intent, int requestCode, Bundle bundle) {
         StringBuilder builder = new StringBuilder();
+
+        Date date = new Date();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+        String dateStrTmp = dateFormat.format(date);
+
         builder.append("{")
+                .append(String.format("\"time\": \"%s\",", dateStrTmp))
                 .append(String.format("\"action\": \"%s\",", intent.getAction()))
                 .append(String.format("\"clipData\": \"%s\",", intent.getClipData()))
                 .append(String.format((Locale) null, "\"flags\": %d,", intent.getFlags()))
