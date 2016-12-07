@@ -2,7 +2,11 @@ package com.sorcererxw.intentinterceptor.utils;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.text.format.DateFormat;
+
+import com.sorcererxw.intentinterceptor.BuildConfig;
 
 import org.apache.commons.io.FileUtils;
 
@@ -11,6 +15,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Set;
@@ -22,12 +27,17 @@ import java.util.TimeZone;
  * @date: 2016/12/5
  */
 
-public class MyData {
+public class DataUtil {
+
+    private static final String FILE_PATH = "/data/data/com.sorcererxw.intentinterceptor/files/";
 
     private static final String DATA_PATH =
             "/data/data/com.sorcererxw.intentinterceptor/files/intent_data";
 
     public static void createFile(Context context) {
+        if (Build.VERSION.SDK_INT >= 24) {
+            return;
+        }
         File file = new File(DATA_PATH);
         if (!file.exists()) {
             try {
@@ -43,6 +53,16 @@ public class MyData {
         }
     }
 
+    public static String read() throws IOException {
+        String str = "";
+        try {
+            str = FileUtils.readFileToString(new File(FILE_PATH, "intent_data"), "GBK");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "[" + str + "]";
+    }
+
     public static void clear() throws IOException {
         FileUtils.write(new File(DATA_PATH), "", "GBK", false);
     }
@@ -51,16 +71,16 @@ public class MyData {
         FileUtils.write(new File(DATA_PATH), s + "\n", "GBK", true);
     }
 
-    public static String parser(Intent intent, int requestCode, Bundle bundle) {
+    public static String parser(Intent intent, int requestCode, Bundle bundle, String from) {
         StringBuilder builder = new StringBuilder();
 
-        Date date = new Date();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-        String dateStrTmp = dateFormat.format(date);
+        Calendar c = Calendar.getInstance();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss a");
 
         builder.append("{")
-                .append(String.format("\"time\": \"%s\",", dateStrTmp))
+                .append(String.format("\"time\": \"%s\",", simpleDateFormat.format(c.getTime())))
+                .append(String.format("\"from\": \"%s\",", from))
+                .append(String.format("\"to\": \"%s\",", intent.getComponent().getClassName()))
                 .append(String.format("\"action\": \"%s\",", intent.getAction()))
                 .append(String.format("\"clipData\": \"%s\",", intent.getClipData()))
                 .append(String.format((Locale) null, "\"flags\": %d,", intent.getFlags()))
@@ -109,9 +129,12 @@ public class MyData {
                     builder.append(",");
                 }
                 builder.append(String.format("{\"key\": \"%s\",", key))
-                        .append(String.format("\"value\": \"%s\",", value))
-                        .append(String
-                                .format("\"class\": \"%s\"}", value.getClass().getName()));
+                        .append(String.format("\"value\": \"%s\",", value));
+                if (value != null) {
+                    builder.append(String.format("\"class\": \"%s\"}", value.getClass().getName()));
+                } else {
+                    builder.append(String.format("\"class\": \"%s\"}", "unknown"));
+                }
                 added = true;
             }
             builder.append("],");

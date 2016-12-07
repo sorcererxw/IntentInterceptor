@@ -29,6 +29,10 @@ public class DataBean {
 
     @SerializedName("time")
     private String time;
+    @SerializedName("from")
+    private String from;
+    @SerializedName("to")
+    private String to;
     @SerializedName("action")
     private String action;
     @SerializedName("clipData")
@@ -174,6 +178,22 @@ public class DataBean {
 
     public void setTime(String time) {
         this.time = time;
+    }
+
+    public String getFrom() {
+        return from;
+    }
+
+    public void setFrom(String from) {
+        this.from = from;
+    }
+
+    public String getTo() {
+        return to;
+    }
+
+    public void setTo(String to) {
+        this.to = to;
     }
 
     public static class IntentExtrasBean {

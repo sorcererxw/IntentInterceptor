@@ -3,12 +3,13 @@ package com.sorcererxw.intentinterceptor;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.sorcererxw.intentinterceptor.utils.MyData;
+import com.sorcererxw.intentinterceptor.utils.DataUtil;
 
 import java.io.IOException;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
@@ -27,7 +28,8 @@ public class Xposed implements IXposedHookLoadPackage {
             Intent intent = (Intent) param.args[0];
             int requestCode = (int) param.args[1];
             Bundle bundle = (Bundle) param.args[2];
-            log(MyData.parser(intent, requestCode, bundle));
+            DataUtil.write(DataUtil.parser(intent, requestCode, bundle,
+                    param.thisObject.getClass().getName()));
         }
 
         @Override
@@ -41,9 +43,5 @@ public class Xposed implements IXposedHookLoadPackage {
         findAndHookMethod("android.app.Activity", lpparam.classLoader,
                 "startActivityForResult", Intent.class, int.class, Bundle.class,
                 mIntentHook);
-    }
-
-    private void log(String s) throws IOException {
-        MyData.write(s);
     }
 }

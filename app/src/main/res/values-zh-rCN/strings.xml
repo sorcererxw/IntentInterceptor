@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Intent 拦截者</string>
+    <string name="hint_not_data">暂无任何数据|(打开一个新的界面后再回来看看)</string>
+    <string name="hint_not_support_nougat">由于Xposed的原因, 暂不支持7.0+的设备</string>
 </resources>

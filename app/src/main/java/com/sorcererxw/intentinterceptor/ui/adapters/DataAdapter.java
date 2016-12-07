@@ -1,25 +1,29 @@
 package com.sorcererxw.intentinterceptor.ui.adapters;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.support.v4.util.Pair;
 import android.support.v7.widget.RecyclerView;
-import android.text.Html;
+import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.sorcererxw.intentinterceptor.R;
 import com.sorcererxw.intentinterceptor.models.DataBean;
 import com.sorcererxw.intentinterceptor.utils.HtmlBuilder;
 
-import org.sufficientlysecure.htmltextview.HtmlTextView;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
 
 /**
  * @description:
@@ -30,7 +34,7 @@ import butterknife.ButterKnife;
 @SuppressWarnings("deprecation")
 public class DataAdapter extends RecyclerView.Adapter<DataAdapter.DataViewHolder> {
     @SuppressWarnings("unchecked")
-    private Pair<String, Integer>[] mFlagPairs = new Pair[]{
+    public static final Pair<String, Integer>[] FLAG_PAIRS = new Pair[]{
             new Pair<>("FLAG_GRANT_READ_URI_PERMISSION", 0x00000001),
             new Pair<>("FLAG_GRANT_WRITE_URI_PERMISSION", 0x00000002),
             new Pair<>("FLAG_FROM_BACKGROUND", 0x00000004),
@@ -69,7 +73,6 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.DataViewHolder
             new Pair<>("FLAG_RECEIVER_EXCLUDE_BACKGROUND", 0x00800000),
     };
 
-
     private List<DataBean> mList = new ArrayList<>();
 
     private Context mContext;
@@ -83,6 +86,12 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.DataViewHolder
         notifyDataSetChanged();
     }
 
+    public void clearData() {
+        int count = mList.size();
+        mList.clear();
+        notifyItemRangeRemoved(0, count);
+    }
+
     @Override
     public DataViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         return new DataViewHolder(
@@ -90,103 +99,17 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.DataViewHolder
     }
 
     @Override
-    public void onBindViewHolder(DataViewHolder holder, int position) {
-        holder.time.setText(Html.fromHtml("<b>time: </b>" + mList.get(position).getTime()));
-        holder.action.setText(new HtmlBuilder()
-                .appendBold("action: ")
-                .appendText(mList.get(position).getAction())
-                .build());
-        holder.clipData.setText(new HtmlBuilder()
-                .appendBold("clipData: ")
-                .appendText(mList.get(position).getClipData())
-                .build());
+    public void onBindViewHolder(final DataViewHolder holder, int position) {
 
-        HtmlBuilder flagsBuilder = new HtmlBuilder().appendBold("flags: ")
-                .appendText(String.format("0x%08X", mList.get(position).getFlags()));
-        for (Pair<String, Integer> pair : mFlagPairs) {
-            if (pair.second == mList.get(position).getFlags()) {
-                flagsBuilder.appendItalic(" (" + pair.first + ")");
-                break;
-            }
-        }
-        holder.flags.setText(flagsBuilder.build());
-        holder.dataString.setText(new HtmlBuilder()
-                .appendBold("dataString: ")
-                .appendText(mList.get(position).getDataString())
-                .build());
-        holder.type.setText(new HtmlBuilder()
-                .appendBold("type: ")
-                .appendText(mList.get(position).getType())
-                .build());
-        holder.componentName.setText(new HtmlBuilder()
-                .appendBold("componentName: ")
-                .appendText(mList.get(position).getComponentName())
-                .build());
-        holder.scheme.setText(new HtmlBuilder()
-                .appendBold("scheme: ")
-                .appendText(mList.get(position).getScheme())
-                .build());
-        holder.packageName.setText(new HtmlBuilder()
-                .appendBold("package: ")
-                .appendText(mList.get(position).getPackageX())
-                .build());
-        holder.requestCode.setText(new HtmlBuilder()
-                .appendBold("requestCode: ")
-                .appendText(mList.get(position).getRequestCode() + "")
-                .build());
+        holder.itemView
+                .setOnClickListener(new DataItemOnClickListener(mContext, mList.get(position)));
 
-        HtmlBuilder categoriesBuilder = new HtmlBuilder().appendBold("categories: ");
-        if (mList.get(position).getCategories() == null) {
-            categoriesBuilder.appendText("null");
-        } else if (mList.get(position).getCategories().size() == 0) {
-            categoriesBuilder.appendText("[]");
-        } else {
-            categoriesBuilder.appendText("[").newLine();
-            for (String c : mList.get(position).getCategories()) {
-                categoriesBuilder.appendTab(1).appendText(c).appendText(",").newLine();
-            }
-            categoriesBuilder.appendText("]");
-        }
-        holder.categories.setText(categoriesBuilder.build());
-
-        HtmlBuilder intentExtrasBuilder = new HtmlBuilder().appendBold("intentExtras: ");
-        if (mList.get(position).getIntentExtras() == null) {
-            intentExtrasBuilder.appendText("null");
-        } else if (mList.get(position).getIntentExtras().size() == 0) {
-            intentExtrasBuilder.appendText("[]");
-        } else {
-            intentExtrasBuilder.appendText("[").newLine();
-            for (DataBean.IntentExtrasBean ie : mList.get(position).getIntentExtras()) {
-                intentExtrasBuilder
-                        .appendTab(1).appendText("{").newLine()
-                        .appendTab(2).appendText("key: ").appendText(ie.getKey()).newLine()
-                        .appendTab(2).appendText("value: ").appendText(ie.getValue()).newLine()
-                        .appendTab(2).appendText("class: ").appendText(ie.getClassX()).newLine()
-                        .appendTab(1).appendText("},").newLine();
-            }
-            intentExtrasBuilder.appendText("]");
-        }
-        holder.intentExtras.setText(intentExtrasBuilder.build());
-
-        HtmlBuilder bundleBuilder = new HtmlBuilder().appendBold("bundle: ");
-        if (mList.get(position).getBundle() == null) {
-            bundleBuilder.appendText("null");
-        } else if (mList.get(position).getBundle().size() == 0) {
-            bundleBuilder.appendText("[]");
-        } else {
-            bundleBuilder.appendText("[").newLine();
-            for (DataBean.BundleBean ie : mList.get(position).getBundle()) {
-                bundleBuilder
-                        .appendTab(1).appendText("{").newLine()
-                        .appendTab(2).appendText("key: ").appendText(ie.getKey()).newLine()
-                        .appendTab(2).appendText("value: ").appendText(ie.getValue()).newLine()
-                        .appendTab(2).appendText("class: ").appendText(ie.getClassX()).newLine()
-                        .appendTab(1).appendText("},").newLine();
-            }
-            bundleBuilder.appendText("]");
-        }
-        holder.bundle.setText(bundleBuilder.build());
-
+        HtmlBuilder htmlBuilder = new HtmlBuilder();
+        htmlBuilder.newLine(1)
+                .appendBold("time: ").appendText(mList.get(position).getTime()).newLine(2)
+                .appendBold("from: ").appendText(mList.get(position).getFrom()).newLine(2)
+                .appendBold("to: ").appendText(mList.get(position).getTo()).newLine(1);
+        holder.content.setText(htmlBuilder.build());
     }
 
     @Override
@@ -195,36 +118,124 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.DataViewHolder
     }
 
     static class DataViewHolder extends RecyclerView.ViewHolder {
-        @BindView(R.id.textView_item_time)
-        TextView time;
-        @BindView(R.id.textView_item_action)
-        TextView action;
-        @BindView(R.id.textView_item_clipdata)
-        TextView clipData;
-        @BindView(R.id.textView_item_flags)
-        TextView flags;
-        @BindView(R.id.textView_item_datastring)
-        TextView dataString;
-        @BindView(R.id.textView_item_type)
-        TextView type;
-        @BindView(R.id.textView_item_componentname)
-        TextView componentName;
-        @BindView(R.id.textView_item_scheme)
-        TextView scheme;
-        @BindView(R.id.textView_item_package)
-        TextView packageName;
-        @BindView(R.id.textView_item_requestcode)
-        TextView requestCode;
-        @BindView(R.id.textView_item_categories)
-        TextView categories;
-        @BindView(R.id.textView_item_intentextras)
-        TextView intentExtras;
-        @BindView(R.id.textView_item_bundle)
-        TextView bundle;
+        @BindView(R.id.textView_item_content)
+        TextView content;
 
         public DataViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
+        }
+    }
+
+    public static class DataItemOnClickListener implements View.OnClickListener {
+
+        private Context mContext;
+        private DataBean mDataBean;
+
+        public DataItemOnClickListener(Context context, DataBean dataBean) {
+            mContext = context;
+            mDataBean = dataBean;
+        }
+
+        @BindView(R.id.textView_dialog_content)
+        TextView content;
+
+        @Override
+        public void onClick(View v) {
+            Dialog dialog = new Dialog(mContext);
+            View view = View.inflate(mContext, R.layout.dialog_data, null);
+            ButterKnife.bind(this, view);
+            DataBean dataBean = mDataBean;
+
+            HtmlBuilder htmlBuilder = new HtmlBuilder();
+            htmlBuilder.newLine()
+                    .appendBold("time: ").appendText(dataBean.getTime()).newLine(2)
+                    .appendBold("from: ").appendText(dataBean.getFrom()).newLine(2)
+                    .appendBold("to: ").appendText(dataBean.getTo()).newLine(2)
+                    .appendBold("action: ").appendText(dataBean.getAction()).newLine(2)
+                    .appendBold("clipData: ").appendText(dataBean.getClipData()).newLine(2);
+            htmlBuilder.appendBold("flags: ")
+                    .appendText(String.format("0x%08X", dataBean.getFlags()));
+            for (Pair<String, Integer> pair : FLAG_PAIRS) {
+                if (pair.second == dataBean.getFlags()) {
+                    htmlBuilder.appendItalic(" (" + pair.first + ")");
+                    break;
+                }
+            }
+            htmlBuilder.newLine();
+            htmlBuilder
+                    .appendBold("dataString: ").appendText(dataBean.getDataString()).newLine(2)
+                    .appendBold("type: ").appendText(dataBean.getType()).newLine(2)
+                    .appendBold("componentName: ").appendText(dataBean.getComponentName())
+                    .newLine(2)
+                    .appendBold("scheme: ").appendText(dataBean.getScheme()).newLine(2)
+                    .appendBold("package: ").appendText(dataBean.getPackageX()).newLine(2)
+                    .appendBold("requestCode: ").appendText(dataBean.getRequestCode() + "")
+                    .newLine(2);
+
+            htmlBuilder.appendBold("categories: ");
+            if (dataBean.getCategories() == null) {
+                htmlBuilder.appendText("null");
+            } else if (dataBean.getCategories().size() == 0) {
+                htmlBuilder.appendText("[]");
+            } else {
+                htmlBuilder.appendText("[").newLine();
+                for (String c : dataBean.getCategories()) {
+                    htmlBuilder.appendTab(1).appendText(c).appendText(",").newLine();
+                }
+                htmlBuilder.appendText("]");
+            }
+            htmlBuilder.newLine(2);
+
+            htmlBuilder.appendBold("intentExtras: ");
+            if (dataBean.getIntentExtras() == null) {
+                htmlBuilder.appendText("null");
+            } else if (dataBean.getIntentExtras().size() == 0) {
+                htmlBuilder.appendText("[]");
+            } else {
+                htmlBuilder.appendText("[").newLine();
+                for (DataBean.IntentExtrasBean ie : dataBean.getIntentExtras()) {
+                    htmlBuilder
+                            .appendTab(1).appendText("{").newLine()
+                            .appendTab(2).appendText("key: ").appendText(ie.getKey()).newLine()
+                            .appendTab(2).appendText("value: ").appendText(ie.getValue())
+                            .newLine()
+                            .appendTab(2).appendText("class: ").appendText(ie.getClassX())
+                            .newLine()
+                            .appendTab(1).appendText("},").newLine();
+                }
+                htmlBuilder.appendText("]");
+            }
+            htmlBuilder.newLine(2);
+
+            htmlBuilder.appendBold("bundle: ");
+            if (dataBean.getBundle() == null) {
+                htmlBuilder.appendText("null");
+            } else if (dataBean.getBundle().size() == 0) {
+                htmlBuilder.appendText("[]");
+            } else {
+                htmlBuilder.appendText("[").newLine();
+                for (DataBean.BundleBean ie : dataBean.getBundle()) {
+                    htmlBuilder
+                            .appendTab(1).appendText("{").newLine()
+                            .appendTab(2).appendText("key: ").appendText(ie.getKey()).newLine()
+                            .appendTab(2).appendText("value: ").appendText(ie.getValue())
+                            .newLine()
+                            .appendTab(2).appendText("class: ").appendText(ie.getClassX())
+                            .newLine()
+                            .appendTab(1).appendText("},").newLine();
+                }
+                htmlBuilder.appendText("]");
+            }
+            htmlBuilder.newLine();
+            content.setText(htmlBuilder.build());
+
+            dialog.setContentView(view);
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT,
+                        WindowManager.LayoutParams.MATCH_PARENT);
+            }
+            dialog.show();
         }
     }
 }

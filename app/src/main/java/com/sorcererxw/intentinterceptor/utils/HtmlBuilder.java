@@ -26,9 +26,8 @@ public class HtmlBuilder {
         return this;
     }
 
-    public HtmlBuilder appendTab(int times){
-        String space ="";
-        for(int i=0;i<times*4;i++){
+    public HtmlBuilder appendTab(int times) {
+        for (int i = 0; i < times * 2; i++) {
             mStringBuilder.append("&nbsp;");
         }
         return this;
@@ -40,7 +39,13 @@ public class HtmlBuilder {
     }
 
     public HtmlBuilder newLine() {
-        mStringBuilder.append("<br/>");
+        return newLine(1);
+    }
+
+    public HtmlBuilder newLine(int lines) {
+        for (int i = 0; i < lines; i++) {
+            mStringBuilder.append("<br/>");
+        }
         return this;
     }
 
